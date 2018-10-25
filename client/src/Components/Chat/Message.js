@@ -27,6 +27,8 @@ class Message extends Component {
         }
 
         
+        console.log(this.props.textData)
+
         let content=(
             <div style={{...Styles.outerWrapper,justifyContent}} >
                 {this.props.textData.type==="recieved" &&
@@ -35,8 +37,8 @@ class Message extends Component {
                     </div>
                 }
                 <div style={Styles.innerWrapper}>
-                    {this.props.textData.data.map((data)=>{
-                        return(<div><MessageBody text={data.text} bgcolor={bgcolor}/></div>)
+                    {this.props.textData.data.map((data,id)=>{
+                        return(<div key={id}><MessageBody text={data.text} bgcolor={bgcolor}/></div>)
                     })}
                 </div>
             </div>

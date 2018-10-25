@@ -1,15 +1,17 @@
 import React, { Component } from 'react'
 import Message from "./Message"
-// import socketClient from "so"
+
 
 const ChatHeader=(props)=>{
     return(
         <div style={Styles.chatHeader}>
-            <h style={Styles.name}>{props.name}</h>
+            <h2 style={Styles.name}>{props.name}</h2>
             <p style={Styles.status}>Last seen: 1 hrs ago</p>
         </div>
     )
 }
+
+
 class ChatFooter extends Component {
     constructor(props) {
       super(props)
@@ -82,8 +84,8 @@ const MessageSlider=(props)=>{
     
     return(
         <div style={Styles.messageSlider}>   
-        {props.messages.map((textData)=>{
-            return <Message textData={textData}/>
+        {props.messages.map((textData,id)=>{
+            return <Message key={id} textData={textData}/>
         })}
         </div>
     )
@@ -95,9 +97,6 @@ export default class ChatWindow extends Component {
     super(props)
   
     this.state = {
-       messages:[{type:"sent",data:[{text:"Hello!"},{text:"Ex tempor labore aliqua nulla minim officia cillum aliqua amet excepteur. Labore aliqua duis irure fugiat occaecat magna duis pariatur. Proident occaecat nulla aute fugiat commodo eiusmod consectetur eiusmod dolor ipsum nisi est ut. Est nisi quis sit ut incididunt proident sit elit cupidatat ullamco aute occaecat. In nulla ad consectetur qui enim culpa non ex nisi. Eu ipsum culpa deserunt aute nulla non excepteur eu mollit anim aute adipisicing dolore irure."}]},
-                 {type:"recieved",data:[{text:"Hi!"},{text:"I am fine. How are you?"}]}
-                ],
        isTextLoaded:true
     };
     
@@ -107,22 +106,30 @@ export default class ChatWindow extends Component {
       if(text.length===0){
           return
       }
-      let data=[...this.state.messages]
-      data.push({type:"sent",data:[{text:text}]})
-      this.setState({messages:data})
+      this.props.sendMessage({myId:this.props.userId,userId:this.props.currentChatId,messageData:{type:"sent",data:[{text}]}})
+      this.props.socket.emit("sendMessage",{text:text,userId:this.props.currentChatId})
 
   }
 
   componentDidMount=()=>{
     this.setState({isTextLoaded:true})
-  }
-  
+  }  
   render() {
+    
+
+
     return (
-      <div style={Styles.mainChatWindow}>
-          <ChatHeader name="Bijay"/>
-          <MessageSlider showText={this.state.isTextLoaded} messages={this.state.messages} />
-          <ChatFooter onSendingMessage={this.onSendingMessage} />
+      <div style={{height:"100%"}}>
+          {this.props.isChatSelected?(
+              <div style={Styles.mainChatWindow}>
+                <ChatHeader name={this.props.currentChatId}/>
+                <MessageSlider showText={this.state.isTextLoaded} messages={this.props.messageData} />
+                <ChatFooter onSendingMessage={this.onSendingMessage} />
+              </div>
+          ):(<div>
+              No Chat Selected
+          </div>)
+          }    
       </div>
     )
   }
@@ -131,6 +138,7 @@ export default class ChatWindow extends Component {
 const Styles={
     chatHeader:{
         padding:"15px",
+        height:"85px",
         boxShadow:"0 0 0 1px rgba(0, 0, 0, 0.2)",
         backgroundColor:"white"
     },
@@ -172,7 +180,7 @@ const Styles={
         cursor:"pointer"
     },
     mainChatWindow:{
-        height:"100vh",
+        height:"100%",
         backgroundColor:"aliceblue",
         display:"flex",
         flexDirection: 'column',

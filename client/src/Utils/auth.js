@@ -13,6 +13,10 @@ export const setAccessToken=(token)=>{
     localStorage.setItem(tokenName,token)
 }
 
+export const getAccessToken=(()=>{
+    return localStorage.getItem(tokenName)
+})
+
 export const clearAccessToken=(token)=>{
     localStorage.removeItem(tokenName)
 }

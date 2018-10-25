@@ -3,11 +3,13 @@ import {login} from "../../Utils/api"
 import {setAccessToken} from "../../Utils/auth"
 import { Alert } from 'reactstrap'
 import {isAuthenticated} from "../../Utils/auth"
-import axios from "axios"
-import Redirect from 'react-router-dom/Redirect';
+import jwtDecode from "jwt-decode"
+import {Redirect,Link} from 'react-router-dom';
+import {connect} from "react-redux"
+import {AddCurrentUser} from "../../Actions/userActions"
 
 
-export default class Login extends Component {
+class Login extends Component {
 
   constructor(props) {
     super(props)
@@ -36,9 +38,9 @@ export default class Login extends Component {
               if(!res.data.token){
                   this.setState({status:"Login Failed!",alertColor:"danger",showAlert:true})
               }
-
-
               setAccessToken(res.data.token)
+              let decoded=jwtDecode(res.data.token)
+              this.props.addCurrentUser({id:decoded.user_id})
               this.setState({status:"Login Successfull!",alertColor:"success",showAlert:true})
           }
       ).catch(err=>{
@@ -63,6 +65,8 @@ export default class Login extends Component {
             <input type="password" onChange={this.onChangeHandler} className="form-control" id="password"/>
         </div>
         <button type="button"  onClick={this.onSubmit} className="btn btn-info">Login</button>
+        <span className="ml-2 mr-2 text-success"><b>OR</b></span>
+        <Link to="/signup"><button type="button"  onClick={this.onSubmit} className="btn btn-info">Signup</button></Link>        
         <div>
         <Alert isOpen={this.state.showAlert} color={`${this.state.alertColor} mt-3`} toggle={this.onDismiss}>
             {this.state.status}
@@ -72,3 +76,14 @@ export default class Login extends Component {
     )
   }
 }
+
+
+const mapDispatchToProps=(dispatch)=>{
+  return {
+    addCurrentUser:(userDetails)=>{
+      dispatch(AddCurrentUser(userDetails))
+    }
+  }
+}
+
+export default connect(null,mapDispatchToProps)(Login)

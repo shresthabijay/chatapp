@@ -5,6 +5,7 @@ const db=require("./database")
 const app=express()
 const jwt=require("jsonwebtoken")
 const bcrypt = require('bcrypt-nodejs');
+const auth=require("./auth")
 
 app.use( bodyparser.json());
 app.use(bodyparser.urlencoded({extended:true}))
@@ -44,7 +45,7 @@ app.post("/login",(req,res,next)=>{
         if(result.length!==0){
             const hashPassword=result[0].password
             if(bcrypt.compareSync(password,hashPassword)){
-                let token=jwt.sign({user_id:result[0].id},"secret-key")
+                let token=jwt.sign({user_id:result[0].id},auth.secretKey)
                 res.status(200).send({message:"Autherization Successfull",token:token})
             }
             else{
@@ -58,11 +59,14 @@ app.post("/login",(req,res,next)=>{
 })
 
 
-app.get("/query",(req,res,next)=>{
-    db.query(`SELECT users.username FROM users,orders WHERE orders.userid=users.id `,(err,result)=>{
-        if(err) res.status(400).send(err)
+app.post("/getUserDetail/",auth.authenticateToken,(req,res,next)=>{
+    db.query(`SELECT username,id FROM users WHERE id=${req.body.id}`,(err,result)=>{
+        if(err || result.length===0){
+            res.status(200).send({message:"not found!"})
+        }
 
-        res.send(result)
+        console.log("asdasd")
+        res.status(400).send(result)
     })
 })
 
